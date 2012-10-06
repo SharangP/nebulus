@@ -1,0 +1,28 @@
+!!!5
+html
+  head
+    title #{title} - My Site
+    link(rel='stylesheet', href='/stylesheets/style.css')
+
+script(type = "text/javascript", src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js")
+
+script(type = "text/javascript")    
+    var io = io.connect()
+    io.sockets.on('connection',socket.emit("toggle"))
+
+script(type = "text/javascript")
+    function toggleButton(){
+    alert("sameer is a gay")
+    }
+ 
+  body
+    header
+      h1 My Site
+    .container
+      .main-content
+        block content
+      .sidebar
+        input(type="button", text="something",onclick="toggleButton();")
+        block sidebar
+    footer
+      p Running on node with Express, Jade and Stylus
