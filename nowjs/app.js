@@ -39,8 +39,6 @@
     //Logs output of exec to stdout (command line)
     function puts(error, stdout, stderr) { sys.puts(stdout) }
     
-    //Similar to above. Logs to stderr and sets statusv to val of stdout
-    function putsval(error, stdout, stderr) { sys.puts(stderr); statusv=stdout}
  
     // Server side logic to check current state of mpd
     everyone.now.checkValue = function() {
@@ -76,9 +74,9 @@
         statusv=this.now.status;
     }
       
-    //Sets initial status?  
+    //Sets initial status for new clients  
     everyone.now.askStatus= function() {
-	    this.now.setStatus('bitch');
+	    this.now.setStatus(statusv);
     }   
 	
 
