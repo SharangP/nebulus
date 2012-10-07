@@ -9,7 +9,7 @@
 $(document).ready(function(){
  
 	now.ready(function(){
-	now.askStatus();  
+	 
 		now.setStatus=(function(status){
 		 $("#messages").text(status);
 		now.status=status;
@@ -42,8 +42,11 @@ $(document).ready(function(){
 		now.command = 'next';
 		now.checkValue();
 	});
-
+//	$("#refresh").click(function(){
+//		now.askStatus(); 
+//	});
 });
+
 
 </script>
 
@@ -59,6 +62,10 @@ hello bitches
 <input type="button" value="Previous" id="prev">
 <input type="button" value="Play/Pause" id="toggle-button">
 <input type="button" value="Next" id="next">
+<!--<input type="button" value="Refresh" id="refresh">-->
+ <body onLoad="now.askStatus();">
 </body>
 </html>
-
+<script>
+setTimeout("now.askStatus()", 300)
+</script>
