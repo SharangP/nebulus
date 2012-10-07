@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>nowjs test</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="/nowjs/now.js"></script>
+
+<script>
+$(document).ready(function(){
+ 
+	now.ready(function(){
+	now.askStatus();  
+		now.setStatus=(function(status){
+		 $("#messages").text(status);
+		now.status=status;
+		});
+   	});
+
+
+	//setTimeout(500); 
+
+	$("#toggle-button").click(function(){
+	    if(now.status == 'play'){
+		now.command = 'pause';
+		now.status= 'pause';
+		}
+	    else {
+		now.command = 'play';
+		now.status= 'play';
+		}
+	    now.checkValue();
+	});
+
+
+	$("#prev").click(function(){
+		now.command = 'prev';
+		now.checkValue();
+	});
+
+
+	$("#next").click(function(){
+		now.command = 'next';
+		now.checkValue();
+	});
+
+});
+
+</script>
+
+
+</head>
+
+<body>
+
+hello bitches
+<p id="messages">
+</p>
+<!--<input type="text" id="text-input">-->
+<input type="button" value="Previous" id="prev">
+<input type="button" value="Play/Pause" id="toggle-button">
+<input type="button" value="Next" id="next">
+</body>
+</html>
+

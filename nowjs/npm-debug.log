@@ -1,0 +1,58 @@
+info it worked if it ends with ok
+verbose cli [ 'node',
+verbose cli   '/usr/bin/npm',
+verbose cli   'install',
+verbose cli   '-g',
+verbose cli   'https://github.com/moechofe/node-mpdsocket' ]
+info using npm@1.1.4
+info using node@v0.6.19
+verbose config file /root/.npmrc
+verbose config file /usr/etc/npmrc
+verbose config file /usr/share/npm/npmrc
+silly exec /usr/bin/node "/usr/share/npm/bin/npm-get-uid-gid.js" "nobody" 1000
+silly spawning [ '/usr/bin/node',
+silly spawning   [ '/usr/share/npm/bin/npm-get-uid-gid.js', 'nobody', 1000 ],
+silly spawning   null ]
+silly output from getuid/gid {"uid":65534,"gid":1000}
+silly output from getuid/gid 
+verbose cache add [ 'https://github.com/moechofe/node-mpdsocket', null ]
+silly cache add: name, spec, args [ undefined,
+silly cache add: name, spec, args   'https://github.com/moechofe/node-mpdsocket',
+silly cache add: name, spec, args   [ 'https://github.com/moechofe/node-mpdsocket', null ] ]
+verbose parsed url { protocol: 'https:',
+verbose parsed url   slashes: true,
+verbose parsed url   host: 'github.com',
+verbose parsed url   hostname: 'github.com',
+verbose parsed url   href: 'https://github.com/moechofe/node-mpdsocket',
+verbose parsed url   pathname: '/moechofe/node-mpdsocket',
+verbose parsed url   path: '/moechofe/node-mpdsocket' }
+verbose addRemoteTarball [ 'https://github.com/moechofe/node-mpdsocket', null ]
+verbose mkdir (expected) error ENOENT, stat '/tmp/npm-1349580245832'
+verbose mkdir (expected) error ENOENT, stat '/tmp/npm-1349580245832/1349580245832-0.7094317388255149'
+verbose mkdir done: /tmp/npm-1349580245832/1349580245832-0.7094317388255149 755
+verbose fetch to /tmp/npm-1349580245832/1349580245832-0.7094317388255149/tmp.tgz
+http GET https://github.com/moechofe/node-mpdsocket
+http 200 https://github.com/moechofe/node-mpdsocket
+verbose mkdir (expected) error ENOENT, stat '/tmp/npm-1349580245832/1349580245832-0.7094317388255149/___package.npm'
+verbose mkdir done: /tmp/npm-1349580245832/1349580245832-0.7094317388255149/___package.npm 755
+verbose unpack_ uid, gid [ 0, 0 ]
+verbose unpackTarget /tmp/npm-1349580245832/1349580245832-0.7094317388255149/package
+silly gunzTarPerm modes [ '755', '644' ]
+ERR! Not a package /tmp/npm-1349580245832/1349580245832-0.7094317388255149/tmp.tgz
+ERR! couldn't unpack /tmp/npm-1349580245832/1349580245832-0.7094317388255149/tmp.tgz to /tmp/npm-1349580245832/1349580245832-0.7094317388255149
+ERR! Error: ENOENT, open '/tmp/npm-1349580245832/1349580245832-0.7094317388255149/___package.npm/package/package.json'
+ERR! You may report this log at:
+ERR!     <http://bugs.debian.org/npm>
+ERR! or use
+ERR!     reportbug --attach /home/pi/nebulus-core/nowjs/npm-debug.log npm
+ERR! 
+ERR! System Linux 3.2.27+
+ERR! command "node" "/usr/bin/npm" "install" "-g" "https://github.com/moechofe/node-mpdsocket"
+ERR! cwd /home/pi/nebulus-core/nowjs
+ERR! node -v v0.6.19
+ERR! npm -v 1.1.4
+ERR! path /tmp/npm-1349580245832/1349580245832-0.7094317388255149/___package.npm/package/package.json
+ERR! code ENOENT
+ERR! message ENOENT, open '/tmp/npm-1349580245832/1349580245832-0.7094317388255149/___package.npm/package/package.json'
+ERR! errno {}
+verbose exit [ 1, true ]
