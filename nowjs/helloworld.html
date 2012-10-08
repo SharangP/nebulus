@@ -11,9 +11,34 @@ $(document).ready(function(){
 	now.ready(function(){
 	 
 		now.setStatus=(function(status){
-		 $("#messages").text(status);
-		now.status=status;
+			 $("#messages").text(status);
+			if(status=='play') {
+				$("#toggle-button").attr('value','Pause');
+				}
+			else {
+				$("#toggle-button").attr('value','Play');
+			}
+			now.status=status;
+
 		});
+
+		now.getPlaylist=(function(){
+			//now.setCurSongTime();
+			now.retPlaylist();
+			//alert(String(now.songnum));
+			var newlist = "";
+			for(i = 0; i < now.playlist.length; i++){
+				if(now.songnum==i) {			
+					newlist += "<li><b>"+now.playlist[i]+"</b></li>";
+				}
+				else {
+					newlist += "<li>"+now.playlist[i]+"</li>";
+				}
+			}
+			//alert(newlist);
+			$('#playlist').html(newlist);
+		});
+
    	});
 
 
@@ -42,9 +67,12 @@ $(document).ready(function(){
 		now.command = 'next';
 		now.checkValue();
 	});
-//	$("#refresh").click(function(){
-//		now.askStatus(); 
-//	});
+	$("#refresh").click(function(){
+		now.setPlaylist(); 
+	});
+	$("#refresh").click(function(){
+		now.setCurSongTime(); 
+	});
 });
 
 
@@ -59,14 +87,23 @@ hello bitches
 <p id="messages">
 pause
 </p>
+<p id="pl2">
+playa
+</p>
 <!--<input type="text" id="text-input">-->
 <input type="button" value="Previous" id="prev">
 <input type="button" value="Play/Pause" id="toggle-button">
 <input type="button" value="Next" id="next">
-<!--<input type="button" value="Refresh" id="refresh">-->
- <body onLoad="now.askStatus();">
+<input type="button" value="Refresh" id="refresh">
+<input type="button" value="Refresh song" id="rsong">
+
+<ul id="playlist">
+</ul>
+
 </body>
 </html>
 <script>
-setTimeout("now.askStatus()", 300)
+//now.setPlaylist();
+setTimeout("now.askStatus()", 500);
+setTimeout("now.getPlaylist()", 500);
 </script>

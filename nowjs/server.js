@@ -18,13 +18,17 @@
     var server = require('http').createServer(function(req, res){
         res.end(html);
     });
-    server.listen(8080);
+    server.listen(3000);
 
 /*
  *  Variable declarations
  */
     var everyone = nowjs.initialize(server);
     var statusv= 'pause';
+	var playlist = new Array();
+	var curtime = 0;
+	var cursonglen= 0;
+	var cursongnum = 0;
 
 /*
  * Functions
@@ -33,17 +37,25 @@
     function cSend(cmd) {
 	    mpd.send(cmd,function(r) {
 		    console.log(r);
-	 l   });
+	    });
     }
 
     //Logs output of exec to stdout (command line)
     function puts(error, stdout, stderr) { sys.puts(stdout) }
     
- 
+	everyone.now.setPlaylist=function(){
+		playlist = new Array();
+		mpd.send('playlist', function(input){
+			var i = 0;
+			while(input[String(i)] != undefined){		
+				playlist.push(input[String(i)].substring(6,input[String(i)].length));
+				i++;
+			}
+		});
+		}
     // Server side logic to check current state of mpd
     everyone.now.checkValue = function() {
 	    console.log(this.now.command);
-	    cSend('status');
         
         if(this.now.command=='play') {
 		    cSend('play');
@@ -53,32 +65,46 @@
 		}
         else if(this.now.command=='prev') {
 		    if( this.now.status=='play') {
-			    cSend('previous');		
+			    cSend('previous');
+				if(cursongnum!=0) {cursongnum--;}		
 		    }
 		    else {
 			    cSend('previous')
 			    cSend('pause');
+				if(cursongnum!=0) {cursongnum--;}
 		    }		
 		}
         else if(this.now.command=='next') {
 		    if( this.now.status=='play') {
-			    cSend('next');		
+			    cSend('next');
+				if(cursongnum!=playlist.length) {cursongnum++;}		
 		    }
 		    else {
 			    cSend('next')
 			    cSend('pause');
+				if(cursongnum!=playlist.length) {cursongnum++;}	
 		    }		
 		}
 	   
         everyone.now.setStatus(this.now.status);
         statusv=this.now.status;
+		everyone.now.getPlaylist();
     }
       
     //Sets initial status for new clients  
-    everyone.now.askStatus= function() {
-        mpd.send('status', function(r){
-            var stringsplit = r.split("\'");
-            statusv = stringsplit[21];
-        })    	    
+    everyone.now.askStatus= function() {    	    
         this.now.setStatus(statusv);
-    }   
+		this.now.getPlaylist();		 
+	}
+   
+		everyone.now.retPlaylist=function(){
+				this.now.playlist=playlist;
+				this.now.songnum = cursongnum;
+		}
+		everyone.now.setCurSongTime = function() {
+			//mpd.send('status', function(r){
+    			//var s = String(r).split("\'");
+			//}); 
+		}
+
+
