@@ -102,9 +102,23 @@
 				this.now.songnum = cursongnum;
 		}
 		everyone.now.setCurSongTime = function() {
-			//mpd.send('status', function(r){
+			console.log('yes');
+			mpd.send('currentsong', function(r){
     			//var s = String(r).split("\'");
-			//}); 
+				console.log('start');
+				console.log(r);
+			}); 
+			mpd.on('Time', function(t){
+				console.log(t);
+				console.log('yeah')
+			});
+			//mpd.on('OK',function(){
+			//	mps.send('playlist',function(){
+				//	console.log(r);
+				//	console.log('real end');
+			//	});
+			//});
+			console.log('end');
 		}
 
 
