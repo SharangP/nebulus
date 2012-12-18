@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	    <meta name="HandheldFriendly" content="True">
+	    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <title>NebulUs</title>
+	    
+	    <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+        <link rel="stylesheet" href ="jqm-icon-pack-2.1.2-fa.css" />
+	    
+	    <style type=text/css>
+	        input.ui-slider-input {
+		        display : none !important;
+	        }
+            
+            .button{
+                padding:25% 0;
+            }
+			    .center-wrapper{
+			        text-align: right;
+			    	}
+            
+            .center-wrapper * {
+		        margin: 0 auto;
+		    		}
+	        
+            div.ui-slider{
+                width:95%;
+            }
+            
+            #tblock{
+            	display:block;
+            }
+            
+            #tblock img{
+            	display:block;
+            	float:left;
+            	border:1px;
+            }
+            
+            #nowPlayingInfo{
+            	display:block;
+            	padding-left:180px;
+
+            	}
+            #nowPlayingInfo #title {
+				font-weight: bold;
+				font-size:20px;	
+				padding-bottom:14px;
+            }
+            
+            #nowPlayingInfo #titleA {
+				font-weight: bold;
+				font-size:18px;
+				padding-bottom:14px;
+            }
+            
+            #nowPlayingInfo #titleArtist {
+				font-weight: bold;
+				font-size:18px;	
+				padding-bottom:14px;
+            }
+	    </style>
+	    
+        <!--<script src="jquery-1.8.2.min.js"></script>-->
+	    <!--<script src="jquery.mobile-1.2.0.min.js"></script>-->
+	    <script src="md5.js"></script>
+        <script src="/nowjs/now.js"></script>
+        
+        <script type='text/javascript'>
+            
+            //Varaiables
+            var eTime=0;
+			var songsByArtists = [];
+			var songsByAlbum = [];
+			var songsBySongs = [];
+			var songInfoBool=false;
+			var user;
+			var currentPlaylist = '';
+			var addAllIndex = 0;
+			var cLog=[];
+			var LogList= new String();
+			var emptypl=false;
+			var playlistList = [];
+			var starredSongsList = [];
+			var searchWholeDB = [];
+			
+            $(document).on({
+            	"mousedown touchstart": function () {
+		        	$(this).siblings("input").trigger("start");
+		        },
+		        "mouseup touchend": function () {
+		        	$(this).siblings("input").trigger("stop");
+		        }
+	        }, ".ui-slider");
+
+            $(document).ready(function(){
+            	
+            	$.ajax({
+                    url:'/getUName',
+                    type:'GET',
+                    dataType: 'json',
+                    success: function(data){
+	                    		user = data.uName;
+	                    		$('#contentUserP').text("Your username is: " + user);
+                    		},
+                    failure: function(data){console.log("sorrybro.yourfunctionsucks.");}
+                });
+            	
+            	
+	            now.ready(function(){
+		            now.setStatus=(function(status){
+			            if(status=='play') {
+					        $("#toggle-button").attr('value','Pause');
+					    	$("#toggle-button").buttonMarkup({ icon: "pause" });
+						    $("#toggle-button").button("refresh");
+				        }
+			            else {
+				           	$("#toggle-button").attr('value','Play');
+				           	$("#toggle-button").buttonMarkup({ icon: "play" });
+					    	$("#toggle-button").button("refresh");
+			            }     
+                        now.status=status;
+                        if(status=="play") {$("#messages").text("Playing");}
+                        else{$("#messages").text("Paused");}
+
+			        });
+					
+					now.setPlaylistList=(function(pListList){
+                        playlistList = pListList;        
+                    });
+
+                    now.setLikedSongs=(function(likeList){
+                        starredSongsList = likeList;
+                    });
+					
+					now.setcLog=(function(servcLog){
+			     		cLog=servcLog;
+			     		showLog();
+			     		if(LogList==""){
+			     			for(var i=cLog.length-1; i>=0; i--) {
+			     				LogList+="<li>"+cLog[i]+" </li>";
+			     			}
+            				$('#logList').html(LogList);
+							$('#logList').listview('refresh');
+						}
+			        });
+			        
+					now.forceRefresh=(function(){			        
+			        	window.location.reload();
+			        });
+			        
+				    now.getPlaylist=(function(playlist,count,songNum,curTitle,semptypl){
+
+					    var newList = "";
+                        var delList = "";
+						emptypl=semptypl;
+						if(playlist.length>0){
+							$("#refdiv").hide();
+							$("#adddiv").hide();
+						    $('#title').text(curTitle);
+							$('#titleA').text("Album: "+playlist[songNum].album);
+							$('#titleArtist').text("Artist: "+playlist[songNum].artist);					    
+							$("#curimg").attr("src", playlist[songNum].artPath);
+						}
+						else{
+							if(!emptypl){
+								$("#refdiv").show();
+								$("#adddiv").hide();
+							}
+							else{
+								$("#refdiv").hide();
+								$("#adddiv").show();
+							}
+						}
+			      
+						for(i = 0; i < playlist.length; i++){
+							if(songNum==i) {			
+								newList += "<li data-theme='b'>	";
+								delList+="<li> <a>"+playlist[i].sName+"&emsp;&emsp;&emsp; <span class='ui-li-count'>"+count[i]+"</span></a><p style='padding-left:20px'><strong>Artist</strong>: "+playlist[i].artist+"&emsp;&emsp;&emsp;\<strong>Album</strong>: "+playlist[i].album+"</p> </li>";		
+							}
+							else {
+								newList += "<li> ";
+								delList+="<li> <a>"+playlist[i].sName+"&emsp;&emsp;&emsp; <span class='ui-li-count'>"+count[i]+"</span></a><p style='padding-left:20px'><strong>Artist</strong>: "+playlist[i].artist+"&emsp;&emsp;&emsp;<strong>Album</strong>: "+playlist[i].album+"</p>  <a href='javascript:now.delSong(" + String(i) + ", \"" + user + "\", \"" + currentPlaylist + "\")' data-role='button' data-theme='c' data-icon='remove'>Delete</a> </li>";				
+							}
+							newList+="<a>"+playlist[i].sName+"&emsp;&emsp;&emsp; <span class='ui-li-count'>"+count[i]+"</span></a>\
+											<p style='padding-left:20px'><strong>Artist</strong>: "+playlist[i].artist+"&emsp;&emsp;&emsp;\
+											<strong>Album</strong>: "+playlist[i].album+"</p>  \
+											<a href='javascript:now.addCount(" + String(i) + ", \"" + user + "\")' data-role='button' data-theme='c' data-icon='arrow-up'>Upvote</a> \
+											</li>";
+	
+						}
+            			
+            			$('#playlist').html(newList);
+						$('#playlist').listview('refresh');
+            			$('#deletelist').html(delList);
+						$('#deletelist').listview('refresh');
+		   	        });
+
+				    now.updateTime=(function(elapsed,totalTime,minutes,seconds,tmin,tsec){
+					    $('#time').text(String(minutes)+":"+String(seconds)+'/'+String(tmin)+":"+String(tsec));
+					    $("#time-slider").attr('max',String(totalTime));
+					    $("#time-slider").attr('value',String(elapsed));
+					    $("#time-slider").slider("refresh");
+					    eTime=elapsed;
+				    });
+					
+					now.setSongInfo= (function(artistList,albumList,songList){
+						songsByArtists = artistList;
+						songsByAlbum = albumList;
+						songsBySongs = songList;
+						songInfoBool = true;
+					});
+					
+					now.setDBSearch = (function(list){
+						searchWholeDB = list;
+						loadSearchDB();
+					});
+
+					now.alertUpvote =(function() {
+						alert("You have already voted for this song");
+					});
+					
+		        });//end of now ready
+				
+		        $("#time-slider").on("stop", function (event) {
+		            var sVal = event.target.value;
+			        if(sVal<(eTime-2) || sVal>(eTime+2)) {
+				        $("#time-slider").attr('value',String(sVal));
+				        now.seekSong(sVal);
+				        $("#time-slider").slider("refresh");	
+			        }
+		        });
+            });
+            
+        </script>
+
+    </head>
+
+    <body>
+    	<!-- Home Page -->
+        <div data-role="page" id="home">
+	        
+	        <!-- Header -->
+	        <div data-role="header"> 
+                <h1>NebulUS</h1>
+                <a href="#settings" data-icon="gear" class="ui-btn-right" data-rel="dialog" data-transition="pop" onclick="now.askLikedSongList(user);">Options</a>
+                <a href="#addPage" data-role='button' class="ui-btn-left" onclick="if(!songInfoBool) now.askSongInfo();" id="addButton" data-inline="true" data-rel="dialog" data-transition="pop" data-mini="true" data-theme="a" data-icon="plus">Add </a>	
+            </div>  
+            
+            <!-- Now Playing -->
+            <div  id="tblock" data-role="collapsible" data-theme="a" data-content-theme="c" data-collapsed="false">
+	            <h3 id="nowPlayingHeader">Now Playing</h3>
+            		<img align="left" width="150" id="curimg" src="/albumart.jpg">
+            		<div id ="nowPlayingInfo">
+					    <div id="title"> Track 1</div>
+					    <div id="titleA">Album Name</div>
+					    <div id="titleArtist">Artist</div>
+					    <div id="messages">pause</div>
+              			<div id="time">0/0</div>
+		              <div style="clear:both;"></div>
+           			</div>
+            </div> 
+
+            <!-- Time slider -->
+	        <br>
+                <div class="ui-grid-solo">
+                    <div class="ui-block-a">
+                        <input type="range" name="slider-mini" id="time-slider" value="25" min="0" max="100" data-highlight="true"/>
+                    </div>
+                </div>    
+            </br>    
+		
+            <!-- Current Playlist -->
+            <ol data-role="listview" id="playlist"></ol>
+       
+            <!-- Refresh button -->
+            <div id="refdiv">
+                <input type="button" value="Refresh" id="refresh" data-icon="refresh">
+            </div>
+            <div id="adddiv">
+                <a href="#" data-role="button" data-rel="dialog" data-transition="pop" data-icon="plus" >No Playlist Loaded!</a>
+            </div>
+        </div>
+              
+        
+        <!-- Settings page -->
+		<div data-role="page" id="settings">
+	        <div data-role="header">
+		        <h1>Settings</h1>
+	        </div>
+
+	        <div data-role="content">	
+		        <p id="contentUserP">Nothing to see here.</p>
+                <div>
+                    <p><a href="#likesPage" data-role="button" data-icon="gear" onclick="loadLikesList();">View Starred Songs</a></p>        
+                </div>
+		        <div>		
+                	<p><a href="#"data-role="button" data-icon="user" onclick="window.location.href = '/logout';">Logout</a></p>
+		        </div>			
+	        </div>
+        </div>
+        
+        <!-- Likes Page -->
+        <div data-role="page" id="likesPage">
+            <div data-role="header" role = "banner" data-position="fixed" data-id="userLikes" data-tap-toggle="false">
+	        	<a href = "#home" data-icon="delete" data-role="button">Back</a>
+                <h1>Songs that you have upvoted:</h1>
+            </div>
+        
+            <div data-role="content">
+                <ul id="likesList" data-role="listview" data-inset="true" data-autodividers="true" data-divider-theme="a"></ul>
+            </div> 
+        </div>
+        
+        <!-- Add page -->
+        <div data-role="page" id="addPage">
+	        <div data-role="header">
+		        <h1>Add Songs to Current Playlist</h1>
+	        </div>
+
+	        <div data-role="content">	
+                <a href="#addPageArtist" data-role="button" id="addSongDB" data-icon="plus" onclick="revertArtistList();">Browse Songs Database</a>
+                <a href="#addPageSearch" data-transition="pop" data-role="button" id="addSongIm" data-icon="plus">Search Songs Database</a>
+	        </div>
+        </div>
+
+        <!-- Add page (sorted by artist) -->
+        <div data-role="page" id="addPageArtist">
+	        <div data-role="header" role = "banner" data-position="fixed" data-id="addMusic"  data-tap-toggle="false">
+	        	<a href = "#home" data-icon="delete" data-role="button">Back</a>
+		        <h1>Add from Database:</h1>
+				<div data-role="navbar" role ="navigation" >
+					<ul>
+						<li><a href="#" onclick="revertArtistList();" class="ui-btn-active ui-state-persist">Artist</a></li>
+						<li><a href="#addPageAlbum" onclick="revertAlbumList();">Albums</a></li>
+						<li><a href="#addPageSong" onclick="changeSongList();">Songs</a></li>
+					</ul>
+				</div>
+	        </div>
+
+	        <div data-role="content">	
+				<ul id ="artistList" data-role="listview" data-filter="true" data-inset="true" data-autodividers="true" data-divider-theme="a"></ul>
+	        </div>
+	       
+	        <div id="artistFooter" data-role="footer" data-position="fixed" class ="ui-grid-solo" data-tap-toggle="false">
+	            <div class="ui-block-a">
+		        	<a href="javascript:addArtistSong(addAllIndex,-1);" data-role="button" id ="addArtist" data-icon="plus">Add All</a>
+		    	</div>
+	        </div>
+        </div>
+
+        <!-- Add page (sorted by album) -->
+        <div data-role="page" id="addPageAlbum">
+	        <div data-role="header" role = "banner" data-position="fixed" data-id="addMusic"  data-tap-toggle="false">
+	        	<a href = "#home" data-icon="delete" data-role="button">Back</a>
+		        <h1>Add from Database:</h1>
+				<div data-role="navbar" role ="navigation" >
+					<ul>
+						<li><a href="#addPageArtist" onclick="revertArtistList();">Artist</a></li>
+						<li><a href="#" onclick="revertAlbumList();" class="ui-btn-active ui-state-persist">Albums</a></li>
+						<li><a href="#addPageSong" onclick ="changeSongList();">Songs</a></li>
+					</ul>
+				</div>
+	        </div>
+	        <div data-role="content" >	
+				<ul id ="albumList" data-role="listview" data-filter="true" data-inset="true" data-autodividers="true" data-divider-theme="a"></ul>
+	        </div>
+
+     		<div id="albumFooter" data-role="footer" data-position="fixed" class ="ui-grid-solo" data-tap-toggle="false">
+	           <div class="ui-block-a">
+		        	<a href="javascript:addAlbumSong(addAllIndex,-1)" data-role="button" id ="addAlbum" data-icon="plus">Add All</a>
+		        </div>
+	        </div>
+        </div>
+
+
+        <!-- Add page (sorted by song) -->
+        <div data-role="page" id="addPageSong">
+	        <div data-role="header" role = "banner" data-position="fixed" data-id="addMusic"  data-tap-toggle="false">
+	        	<a href = "#home" data-icon="delete" data-role="button">Back</a>
+		        <h1>Add from Database:</h1>
+				<div data-role="navbar" role ="navigation" >
+					<ul>
+						<li><a href="#addPageArtist" onclick="revertArtistList();">Artist</a></li>
+						<li><a href="#addPageAlbum" onclick="revertAlbumList();">Albums</a></li>
+						<li><a href="#" onclick = "changeSongList();" class="ui-btn-active ui-state-persist" >Songs</button></a></li>
+					</ul>
+				</div>
+	        </div>
+	        
+	        <div data-role="content">	
+				<ul id ="songList" data-role="listview" data-filter="true" data-inset="true" data-autodividers="true" data-divider-theme="a"></ul>
+	        </div>
+        </div>
+        
+        <!-- Add page (Search DB) -->
+        <div data-role="page" id="addPageSearch">
+	        <div data-role="header">
+		        <a href = "#home" data-icon="delete" data-role="button">Back</a>
+		        <h1>Search the songs database:</h1>
+	        </div>
+	        
+	        <div data-role="content">
+	        	<input type="text" name="searchVal" id="searchKey" placeholder="Type a song, artist or album name..."/>
+		        <a href="#" data-role="button" id="searchKey" onclick="now.askSearchWholeDB($('#searchKey').attr('value'))" data-icon="plus">Search</a>
+	        </div>
+	        
+	        <div data-role="content">	
+				<ul id ="searchDBList" data-role="listview" data-filter="true" data-inset="true" data-autodividers="true" data-divider-theme="a"></ul>
+	        </div>
+        </div>
+
+    </body>
+</html>
+
+	<script>	
+		setTimeout("now.askStatus()", 1000);
+		setTimeout("now.askStatus()", 5000);
+		$("#adddiv").hide();
+		if(!songInfoBool){ now.askSongInfo();}
+	</script>
+
+
+    <script type='text/javascript'>
+	    //Change the artist list to the songs by a specific artist
+	    function changeArtistList(artist) 
+	    { 
+	    	addAllIndex = String(artist);
+	    	$('#artistFooter').show();
+
+	    	var newlist='';	    	
+	   
+	    	for(i = 0; i < songsByArtists[artist].song.length; i++){
+		    	newlist += "<li><a href='javascript:addArtistSong("+String(artist)+","+String(i)+");'>"+songsByArtists[artist].song[i].sName+"</a></li>";				
+		    }
+	   
+		    $("#artistList").html(newlist);
+		    $('#artistList').listview('refresh');
+		}
+    
+    	//Change html back to the artist list on addPage
+		function revertArtistList() {
+    		   	$('#artistFooter').hide();
+    		   	
+    		   	var newlist='';
+    	
+    		   	for(i = 0; i < songsByArtists.length; i++){
+	    		   	newlist += "<li><a href='javascript:changeArtistList("+String(i)+")'>"+songsByArtists[i].artist+"</a></li>";				
+	    		}
+    	
+	    		$("#artistList").html(newlist);
+	    		$('#artistList').listview('refresh');
+	    }
+    
+    	//Add song from the artist list
+	    function addArtistSong(artist,song) {
+    		if(currentPlaylist != ''){		
+    			if(song==-1){
+    				alert("Added all songs by "+songsByArtists[artist].artist);
+    				now.addMultSong(songsByArtists[artist].song,user);
+    			}
+    			else{
+    				alert("Added to Playlist.");
+    				now.addSong(songsByArtists[artist].song[song].sPath, songsByArtists[artist].song[song].sName, user, currentPlaylist);
+    			}
+    		}
+    		else{
+    			alert("Create/Load a playlist before adding songs.");
+    		}
+    	}
+    	
+    	//Change from the album list to the list of songs in an album
+	    function changeAlbumList(album) 
+	    {   
+	    	addAllIndex = String(album);
+	    	$('#albumFooter').show();
+
+	    	var newlist='';
+	    	
+	    	for(i = 0; i < songsByAlbum[album].song.length; i++){
+		    	newlist += "<li><a href='javascript:addAlbumSong("+String(album)+","+String(i)+");'>"+songsByAlbum[album].song[i].sName+"</a></li>";				
+		    }
+		    
+		    $("#albumList").html(newlist);
+		    $('#albumList').listview('refresh');
+		}
+		
+		//Change to the song list on the addSong page
+		function changeSongList() {
+    		   	var newlist='';
+    	
+    		   	for(i = 0; i < songsBySongs.length; i++){
+	    		   	newlist += "<li><a href='javascript:addSong("+String(i)+")'>" + songsBySongs[i].sName +"<p style='padding-top:3px'>" + songsBySongs[i].artist + " - " +songsBySongs[i].album+ " </p></a></li>";				
+	    		}
+    	
+	    		$("#songList").html(newlist);
+	    		$('#songList').listview('refresh');
+	    }
+    
+    	//Change html back to the album list on addPage
+		function revertAlbumList() {    		   	
+    		   	var newlist='';
+    				$('#albumFooter').hide();
+    		   	for(i = 0; i < songsByAlbum.length; i++){
+	    		   	newlist += "<li><a href='javascript:changeAlbumList("+String(i)+")'><h3>"+songsByAlbum[i].album+"</h3>  <img src ='" + songsByAlbum[i].artPath+ "'/> <p>" + songsByAlbum[i].artist + " </p></a></li>";				
+	    		}
+    	
+	    		$("#albumList").html(newlist);
+	    		$('#albumList').listview('refresh');
+	    }
+    
+    	//Add a song from a specific album. 
+	    function addAlbumSong(album,song) {
+    		if(currentPlaylist != ''){	
+    			if(song==-1){
+    				alert("Added all songs in Album:  "+songsByAlbum[album].album);
+    				now.addMultSong(songsByAlbum[album].song, user);
+    			}
+    			else{
+    				alert("Added to Playlist.");
+    				now.addSong(songsByAlbum[album].song[song].sPath, songsByAlbum[album].song[song].sName, user, currentPlaylist);
+    			}
+    		}
+    		else{
+    			alert("Create/Load a playlist before adding songs.");
+    		}
+    	}
+    
+    	//Add a song to the current playlist
+	    function addSong(song) {
+    		if(currentPlaylist != ''){	
+    			alert("Added to Playlist.");
+    			now.addSong(songsBySongs[song].sPath, songsBySongs[song].sName, user, currentPlaylist);
+    		}
+    		else{
+    			alert("Create/Load a playlist before adding songs.");
+    		}
+    	}
+    	
+    	//Add a song to the current playlist
+	    function addSongSearch(song, list) {
+    		if(currentPlaylist != ''){
+    			alert("Added to Playlist.");
+    			now.addSong(searchWholeDB[song].sPath, searchWholeDB[song].sName, user, currentPlaylist);
+    		}
+    		else{
+    			alert("Create/Load a playlist before adding songs.");
+    		}
+    	}
+
+		//Create a new administrator
+    	function createAdmin(User,Pass, Pass2) {
+			if(User =="" || Pass =="d41d8cd98f00b204e9800998ecf8427e" || Pass2=="d41d8cd98f00b204e9800998ecf8427e"){ 
+				alert("Please Fill out all of the required fields");
+			}
+			else if(String(Pass) != String(Pass2)){
+				alert("Passwords do not match");
+			}
+			else{
+	    		now.createAdmin(User,String(Pass));
+	    		alert("Account created/promoted");
+	    	}
+    	}
+    	
+    	//Create new playlist
+    	function createNewPlaylist(pName,uName) {
+            now.createPlaylist(uName,pName);
+            currentPlaylist = pName;
+            now.loadNewPlaylist(currentPlaylist);
+            alert("Playlist created!");    
+        }
+        
+        //Load new playlist
+        function changePlaylist(playlistName){
+        	currentPlaylist = playlistName;
+        	now.loadNewPlaylist(playlistName);
+        }
+        
+        function loadPlaylistList(){
+            var newlist = '';
+            var name = '';
+            
+            for(i = 0; i < playlistList.length; i++){ 
+		    	newlist += "<li><a href='javascript:changePlaylist(\""+playlistList[i].pName+"\")'><p>"+playlistList[i].pName+"</p></a></li>";				
+            }
+
+            $('#oldPlaylists').html(newlist);
+            $('#oldPlaylists').listview('refresh');
+        }
+
+        function loadLikesList(){
+            var newlist = '';
+
+            for(i = 0; i < starredSongsList.length; i++){
+                newlist += "<li><a href='#'>" + starredSongsList[i].sName +"<p style='padding-top:3px'>" + starredSongsList[i].artist + " - " +starredSongsList[i].album+ " </p></a></li>";
+            }
+            
+            $('#likesList').html(newlist);
+            $('#likesList').listview('refresh');
+        }
+        
+        function loadSearchDB(){
+        	var newlist = '';
+        	
+        	for(i = 0; i < searchWholeDB.length; i++){
+	    		newlist += "<li><a href='javascript:addSongSearch("+String(i)+")'>" + searchWholeDB[i].sName +"<p style='padding-top:3px'>" + searchWholeDB[i].artist + " - " + searchWholeDB[i].album+ " </p></a></li>";				
+	    	}
+        	
+        	$('#searchDBList').html(newlist);
+        	$('#searchDBList').listview('refresh');
+        }
+
+    </script>
+
+

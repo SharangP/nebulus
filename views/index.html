@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+	    <meta name="HandheldFriendly" content="True">
+	    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <title>NebulUs</title>
+	    
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+        <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+        <script src="http://crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js"></script>
+	    <script src="/nowjs/now.js"></script>
+	    <script type='text/javascript'>
+	    
+	    	$(document).ready(function(){
+            	now.ready(function(){
+	            	now.sendNewUser=(function(newuser){
+	             		post_to_url("/",{username: newuser, password: "secret"},"post");
+	             	});
+            	});
+        	});
+
+	    	function addUser(user) {
+	    		now.addUser(user);
+	    	}
+	    
+	    	function post_to_url(path, params, method) {
+				method = method || "post"; // Set method to post by default, if not specified.
+
+				// The rest of this code assumes you are not using a library.
+				// It can be made less wordy if you use one.
+				var form = document.createElement("form");
+				form.setAttribute("method", method);
+				form.setAttribute("action", path);
+
+				for(var key in params) {
+					if(params.hasOwnProperty(key)) {
+				    	var hiddenField = document.createElement("input");
+				    	hiddenField.setAttribute("type", "hidden");
+				    	hiddenField.setAttribute("name", key);
+				    	hiddenField.setAttribute("value", params[key]);
+
+				    	form.appendChild(hiddenField);
+				 	}
+				}
+
+				document.body.appendChild(form);
+				form.submit();
+			}
+	    </script>
+    </head>
+                	
+    <body>    
+		<div data-role="page" id="loginPage">
+			<div data-role="header">
+				<h1>NebulUs</h1>
+				<a href="#adminLogin" class="ui-btn-right" data-rel="dialog" data-transition="pop">Admin Login</a>
+			</div>
+			
+			<div>
+				<div>
+  					<label for ="uname1" style="padding:5px">Username:</label>
+				    <input type="text" name="username" id="uname1" placeholder ="Username" onkeydown="if (event.keyCode == 13) document.getElementById('loginButton').click()" /><br/>
+				</div>
+				<div>
+				    <input type="button" id="loginButton" value="log in" onclick="post_to_url('/',{username: $('#uname1').attr('value'), password: 'secret'}, 'post');"/>
+				</div>
+				<a href="#newPage" data-role='button' id="newUserButton" data-theme='a' data-rel="dialog" data-transition="pop">Create New User</a>
+			</div>
+		</div>
+			
+        <div data-role="page" id="adminLogin">
+	        <div data-role="header">
+		        <h1>Enter Admin Password</h1>
+		    </div>
+
+		    <div data-role="content">
+				    <div>	
+						<label for="username">Username:</label>
+						<input type="text" name="username" id="uname2" value="" placeholder= "Username"/>
+						<label for="password">Password:</label>
+						<input type="password" name="password" id="password" value=""  onkeydown="if (event.keyCode == 13) document.getElementById('adminButton').click()" placeholder="Password"/>
+						<input type="button" id="adminButton" value="log in" onclick="post_to_url('/',{username: $('#uname2').attr('value'), password: CryptoJS.MD5($('#password').attr('value'))	}, 'post');"/>
+					</div>
+            </div>    
+        </div>
+        
+        <div data-role="page" id="newPage">
+	        <div data-role="header">
+		        <h1>Create New User:</h1>
+	        </div>
+
+	        <div data-role="content">
+			   <input type="text" name="username" id="newuname" placeholder="Username" onkeydown="if (event.keyCode == 13) document.getElementById('createButton').click()" /><br/>			
+                <a href="#" id="createButton" data-role="button" id="addnewuser" onclick="addUser($('#newuname').attr('value'));" data-icon="arrow-plus">Create!</a>
+	        </div>
+        </div>
+
+    </body>
+</html>
